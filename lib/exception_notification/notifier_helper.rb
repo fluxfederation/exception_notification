@@ -25,9 +25,9 @@ module ExceptionNotification::NotifierHelper
 
   def render_section(section)
     RAILS_DEFAULT_LOGGER.info("rendering section #{section.inspect}")
-    summary = render("exception_notifier/#{section}").strip
+    summary = render(:partial => "exception_notifier/#{section}").strip
     unless summary.blank?
-      title = render("exception_notifier/title", :locals => { :title => section }).strip
+      title = render(:partial => "exception_notifier/title", :locals => { :title => section }).strip
       "#{title}\n\n#{summary.gsub(/^/, "  ")}\n\n"
     end
   end
