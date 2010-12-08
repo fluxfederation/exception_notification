@@ -4,5 +4,8 @@
 * <%= raw("%-*s: %s" % [max.length, key, inspect_object(filtered_env[key])]) %>
 <% end -%>
 
+* Time   : <%= raw Time.now %>
 * Process: <%= raw $$ %>
 * Server : <%= raw `hostname -s`.chomp %>
+* Root   : <%= raw Pathname.new(Rails.root).realpath %> (PWD <%= Pathname.new(Dir.pwd).realpath %>)
+* Version: <%= raw File.read("#{Rails.root}/BRANCH").chomp rescue "unknown" %> (<%= File.read("#{Rails.root}/REVISION").chomp rescue "unknown" %>)
