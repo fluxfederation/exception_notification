@@ -3,5 +3,8 @@
 * <%= "%-*s: %s" % [max.length, key, filter_sensitive_post_data_from_env(key, @request.env[key].to_s.strip)] %>
 <% end -%>
 
+* Time   : <%= Time.now %>
 * Process: <%= $$ %>
 * Server : <%= `hostname -s`.chomp %>
+* Root   : <%= Pathname.new(Rails.root).realpath %> (PWD <%= Pathname.new(Dir.pwd).realpath %>)
+* Version: <%= File.read("#{Rails.root}/BRANCH").chomp rescue "unknown" %> (<%= File.read("#{Rails.root}/REVISION").chomp rescue "unknown" %>)
