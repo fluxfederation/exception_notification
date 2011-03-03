@@ -1,6 +1,6 @@
 A <%= @exception.class %> occurred <%= @exception_source %>:
 
-  <%= @exception.message %>
+  <%= @exception.message[0..100000] %>
   <%= @backtrace.first %>
 
 <%= @sections.map { |section| render_section(section) }.join %>
