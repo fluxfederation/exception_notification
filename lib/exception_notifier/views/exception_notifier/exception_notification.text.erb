@@ -1,6 +1,6 @@
 A <%= @exception.class %> occurred in <%= @kontroller.controller_name %>#<%= @kontroller.action_name %>:
 
-  <%= raw @exception.message %>
+  <%= raw @exception.message[0..100000] %>
   <%= raw @backtrace.first %>
 
 <%  sections = @sections.map do |section|
