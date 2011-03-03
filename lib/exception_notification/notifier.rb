@@ -1,5 +1,4 @@
 require 'pathname'
-require 'socket'
 
 # Copyright (c) 2005 Jamis Buck
 #
