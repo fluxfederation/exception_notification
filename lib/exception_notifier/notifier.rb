@@ -44,14 +44,14 @@ class ExceptionNotifier
       @request    = ActionDispatch::Request.new(env)
       @backtrace  = clean_backtrace(exception)
       @sections   = @options[:sections]
+      @source     = "#{@kontroller.controller_name}##{@kontroller.action_name}"
       data        = env['exception_notifier.exception_data'] || {}
 
       data.each do |name, value|
         instance_variable_set("@#{name}", value)
       end
 
-      prefix   = "#{@options[:email_prefix]}#{@kontroller.controller_name}##{@kontroller.action_name}"
-      subject  = "#{prefix} (#{@exception.class}) #{@exception.message.inspect[0..255]}"
+      subject  = "#{@options[:email_prefix]}#{@source} (#{@exception.class}) #{@exception.message.inspect[0..255]}"
 
       mail(:to => @options[:exception_recipients], :from => @options[:sender_address], :subject => subject) do |format|
         format.text { render "#{mailer_name}/exception_notification" }
