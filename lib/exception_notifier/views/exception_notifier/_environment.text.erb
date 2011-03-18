@@ -1,4 +1,4 @@
-<% filtered_env = @request.filtered_env -%>
+<% filtered_env = @request.try(:filtered_env) || @env -%>
 <% max = filtered_env.keys.max { |a, b| a.length <=> b.length } -%>
 <% filtered_env.keys.sort.each do |key| -%>
 * <%= raw("%-*s: %s" % [max.length, key, inspect_object(filtered_env[key])]) %>
