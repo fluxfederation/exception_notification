@@ -45,6 +45,8 @@ class ExceptionNotifierHelperTest < Test::Unit::TestCase
   def test_should_filter_env_values_for_raw_post_data_keys_if_controller_can_filter_parameters
     stub_controller(ControllerWithFilterParameters.new)
     assert !@helper.filter_sensitive_post_data_from_env("RAW_POST_DATA", "secret").include?("secret")
+    assert !@helper.filter_sensitive_post_data_from_env("rack.request.form_vars", "secret").include?("secret")
+    assert !@helper.filter_sensitive_post_data_from_env("action_controller.request.request_parameters", "secret").include?("secret")
   end
   def test_should_exclude_raw_post_parameters_if_controller_can_filter_parameters
     stub_controller(ControllerWithFilterParameters.new)

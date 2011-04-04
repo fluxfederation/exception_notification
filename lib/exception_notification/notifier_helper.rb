@@ -60,7 +60,7 @@ module ExceptionNotification::NotifierHelper
   
   def filter_sensitive_post_data_from_env(env_key, env_value)
     return env_value unless exclude_raw_post_parameters?
-    return PARAM_FILTER_REPLACEMENT if (env_key =~ /RAW_POST_DATA/i)
+    return PARAM_FILTER_REPLACEMENT if %w(RAW_POST_DATA rack.request.form_hash rack.request.form_vars action_controller.request.request_parameters).include?(env_key.to_s)
     return @controller.__send__(:filter_parameters, {env_key => env_value}).values[0]
   end
   
