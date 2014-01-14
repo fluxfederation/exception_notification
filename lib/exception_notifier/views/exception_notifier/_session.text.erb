@@ -1,2 +1,4 @@
-* session id: <%= raw @request.session['session_id'].inspect.html_safe %>
-* data: <%= raw PP.pp(@request.session, "") %>
+<% parameter_filter = ActionDispatch::Http::ParameterFilter.new(@env["action_dispatch.parameter_filter"]) -%>
+<% filtered_session = parameter_filter.filter(@request.session) -%>
+* session id: <%= raw filtered_session['session_id'].inspect.html_safe %>
+* data: <%= raw PP.pp(filtered_session, "") %>
