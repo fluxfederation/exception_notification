@@ -79,7 +79,7 @@ class ExceptionNotifier
       @parameter_filter = ActionDispatch::Http::ParameterFilter.new(env["action_dispatch.parameter_filter"])
       @request    = ActionDispatch::Request.new(env)
       @env        = whitelist_env(@request.try(:filtered_env) || @parameter_filter.filter(env))
-      @session    = @parameter_filter.filter(@request.session)
+      @session    = @parameter_filter.filter(@request.session.to_hash)
       @options    = (env['exception_notifier.options'] || {}).reverse_merge(self.class.default_options)
       @kontroller = env['action_controller.instance'] || MissingController.new
       @backtrace  = clean_backtrace(exception)
