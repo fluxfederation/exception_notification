@@ -53,7 +53,7 @@ module ExceptionNotifier
             subject = "#{@options[:email_prefix]}"
             subject << "#{@kontroller.controller_name}##{@kontroller.action_name}" if @kontroller
             subject << " (#{@exception.class})"
-            subject << " #{@exception.message.inspect}" if @options[:verbose_subject]
+            subject << " #{@exception.message.inspect[0..255]}" if @options[:verbose_subject]
             subject = EmailNotifier.normalize_digits(subject) if @options[:normalize_subject]
             subject.length > 120 ? subject[0...120] + "..." : subject
           end
