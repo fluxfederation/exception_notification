@@ -19,14 +19,68 @@ module ExceptionNotifier
           # Append application view path to the ExceptionNotifier lookup context.
           self.append_view_path "#{File.dirname(__FILE__)}/views"
 
+          @@whitelisted_env_vars = [
+            'action_dispatch.request.parameters',
+            'action_dispatch.request.path_parameters',
+            'action_dispatch.request.query_parameters',
+            'action_dispatch.request.request_parameters',
+            'BUNDLE_BIN_PATH',
+            'BUNDLE_GEMFILE',
+            'CONTENT_LENGTH',
+            'CONTENT_TYPE',
+            'DOCUMENT_ROOT',
+            'GEM_HOME',
+            'HOME',
+            /HTTP_/,
+            'ORIGINAL_FULLPATH',
+            'PASSENGER_APP_TYPE',
+            'PASSENGER_ENV',
+            'PASSENGER_RUBY',
+            'PASSENGER_SPAWN_METHOD',
+            'PASSENGER_USER',
+            'PATH',
+            'PATH_INFO',
+            'PWD',
+            'RAILS_ENV',
+            'REMOTE_ADDR',
+            'REMOTE_PORT',
+            'REQUEST_METHOD',
+            'REQUEST_URI',
+            'RUBYOPT',
+            'SERVER_ADDR',
+            'SERVER_NAME',
+            'SERVER_PORT',
+            'SERVER_PROTOCOL',
+            'SERVER_SOFTWARE',
+            'TMPDIR',
+            'USER',
+          ]
+
+
+          #NB: This doesn't seem to correctly create instance attr from
+          #    within base#class_eval:
+          #cattr_accessor :whitelisted_env_vars
+
+          def self.whitelisted_env_vars
+            @@whitelisted_env_vars
+          end
+
+          def whitelisted_env_vars
+            @@whitelisted_env_vars
+          end
+
           def exception_notification(env, exception, options={}, default_options={})
             load_custom_views
 
-            @env        = env
+            #TODO(willjr): Does this need to be an instance var?
+            @parameter_filter = ActionDispatch::Http::ParameterFilter.new(env["action_dispatch.parameter_filter"])
+            @request    = ActionDispatch::Request.new(env)
+
+            @session    = @parameter_filter.filter(@request.session.to_hash)
+            @env        = whitelist_env(@request.try(:filtered_env) || @parameter_filter.filter(env))
             @exception  = exception
             @options    = options.reverse_merge(env['exception_notifier.options'] || {}).reverse_merge(default_options)
             @kontroller = env['action_controller.instance'] || MissingController.new
-            @request    = ActionDispatch::Request.new(env)
             @backtrace  = exception.backtrace ? clean_backtrace(exception) : []
             @sections   = @options[:sections]
             @data       = (env['exception_notifier.exception_data'] || {}).merge(options[:data] || {})
@@ -48,6 +102,13 @@ module ExceptionNotifier
           end
 
           private
+
+          # Remove any entries from the 'env' var that are not in the 'whitelisted_env_var' list
+          def whitelist_env(env)
+            env.select do |key, val|
+              whitelisted_env_vars.any? {|allowed| (allowed.is_a? Regexp) ? key =~ allowed : key == allowed }
+            end
+          end
 
           def compose_subject
             subject = "#{@options[:email_prefix]}"
