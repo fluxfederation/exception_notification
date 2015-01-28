@@ -1,0 +1,13 @@
+<ul style="list-style: none">
+  <li>
+    <strong>Root:</strong>
+    <span><%= raw Pathname.new(Rails.root).realpath %> (PWD <%= raw Pathname.new(Dir.pwd).realpath %></span>
+  </li>
+  <li>
+    <strong>Version:</strong>
+    <span>
+      <%= raw File.read("#{Rails.root}/TAG").chomp rescue "unknown" %>
+      (<%= raw File.read("#{Rails.root}/REVISION").chomp rescue "unknown" %>)
+    </span>
+  </li>
+</ul>
