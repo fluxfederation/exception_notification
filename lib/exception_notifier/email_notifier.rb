@@ -57,16 +57,24 @@ module ExceptionNotifier
           ]
 
 
-          #NB: This doesn't seem to correctly create instance attr from
-          #    within base#class_eval:
+          #NB: This doesn't seem to correctly create instance attr when run from within base#class_eval:
           #cattr_accessor :whitelisted_env_vars
 
+          # Therefore, I have to create the class attr methods manually:
           def self.whitelisted_env_vars
             @@whitelisted_env_vars
           end
 
+          def self.whitelisted_env_vars=(val)
+            @@whitelisted_env_vars = val
+          end
+
           def whitelisted_env_vars
             @@whitelisted_env_vars
+          end
+
+          def whitelisted_env_vars=(val)
+            @@whitelisted_env_vars = val
           end
 
           def exception_notification(env, exception, options={}, default_options={})
@@ -106,6 +114,7 @@ module ExceptionNotifier
           # Remove any entries from the 'env' var that are not in the 'whitelisted_env_var' list
           def whitelist_env(env)
             env.select do |key, val|
+              #TODO(willjr): Why wouldn't you just use `===` instead of testing if is a RegExp?
               whitelisted_env_vars.any? {|allowed| (allowed.is_a? Regexp) ? key =~ allowed : key == allowed }
             end
           end
