@@ -213,7 +213,7 @@ module ExceptionNotifier
         :exception_recipients => [],
         :email_prefix => "[ERROR] ",
         :email_format => :text,
-        :sections => %w(request session environment backtrace),
+        :sections => %w(request session environment versioning backtrace),
         :background_sections => %w(backtrace data),
         :verbose_subject => true,
         :normalize_subject => false,
