@@ -1,6 +1,11 @@
+# coding: utf-8
+lib = File.expand_path('../lib', __FILE__)
+$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
+require 'exception_notifier/version'
+
 Gem::Specification.new do |s|
   s.name = 'exception_notification'
-  s.version = '4.0.1'
+  s.version = ExceptionNotifier::VERSION
   s.authors = ["Jamis Buck", "Josh Peek"]
   s.date = %q{2013-09-15}
   s.summary = "Exception notification for Rails apps"
