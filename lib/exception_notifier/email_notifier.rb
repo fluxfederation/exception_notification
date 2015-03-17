@@ -80,12 +80,14 @@ module ExceptionNotifier
           def exception_notification(env, exception, options={}, default_options={})
             load_custom_views
 
-            #TODO(willjr): Does this need to be an instance var?
-            @parameter_filter = ActionDispatch::Http::ParameterFilter.new(env["action_dispatch.parameter_filter"])
+            #NB: Older versions used an instance var, but since we only use this
+            #    var in a few places, it doesn't make sense:
+            parameter_filter = ActionDispatch::Http::ParameterFilter.new(env["action_dispatch.parameter_filter"])
+
             @request    = ActionDispatch::Request.new(env)
 
-            @session    = @parameter_filter.filter(@request.session.to_hash)
-            @env        = whitelist_env(@request.try(:filtered_env) || @parameter_filter.filter(env))
+            @session    = parameter_filter.filter(@request.session.to_hash)
+            @env        = whitelist_env(@request.try(:filtered_env) || parameter_filter.filter(env))
             @exception  = exception
             @options    = options.reverse_merge(env['exception_notifier.options'] || {}).reverse_merge(default_options)
             @kontroller = env['action_controller.instance'] || MissingController.new
@@ -114,7 +116,7 @@ module ExceptionNotifier
           # Remove any entries from the 'env' var that are not in the 'whitelisted_env_var' list
           def whitelist_env(env)
             env.select do |key, val|
-              #TODO(willjr): Why wouldn't you just use `===` instead of testing if is a RegExp?
+              #FUTURE(willjr): Why wouldn't you just use `===` instead of testing if is a RegExp?
               whitelisted_env_vars.any? {|allowed| (allowed.is_a? Regexp) ? key =~ allowed : key == allowed }
             end
           end

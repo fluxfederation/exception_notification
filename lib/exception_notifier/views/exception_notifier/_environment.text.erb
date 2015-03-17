@@ -1,5 +1,3 @@
-<%#TODO(willjr): This is from up-stream, is it better? -%>
-<%# filtered_env = @request.filtered_env -%>
 <% filtered_env = @env -%>
 <% max = filtered_env.keys.map(&:to_s).max { |a, b| a.length <=> b.length } -%>
 <% filtered_env.keys.map(&:to_s).sort.each do |key| -%>
