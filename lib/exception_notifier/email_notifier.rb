@@ -15,67 +15,49 @@ module ExceptionNotifier
       end
 
       def self.extended(base)
+        #NB: This doesn't seem to correctly create instance attr when run from within base#class_eval:
+        base.cattr_accessor :whitelisted_env_vars
+
+        base.whitelisted_env_vars = [
+          'action_dispatch.request.parameters',
+          'action_dispatch.request.path_parameters',
+          'action_dispatch.request.query_parameters',
+          'action_dispatch.request.request_parameters',
+          'BUNDLE_BIN_PATH',
+          'BUNDLE_GEMFILE',
+          'CONTENT_LENGTH',
+          'CONTENT_TYPE',
+          'DOCUMENT_ROOT',
+          'GEM_HOME',
+          'HOME',
+          /HTTP_/,
+          'ORIGINAL_FULLPATH',
+          'PASSENGER_APP_TYPE',
+          'PASSENGER_ENV',
+          'PASSENGER_RUBY',
+          'PASSENGER_SPAWN_METHOD',
+          'PASSENGER_USER',
+          'PATH',
+          'PATH_INFO',
+          'PWD',
+          'RAILS_ENV',
+          'REMOTE_ADDR',
+          'REMOTE_PORT',
+          'REQUEST_METHOD',
+          'REQUEST_URI',
+          'RUBYOPT',
+          'SERVER_ADDR',
+          'SERVER_NAME',
+          'SERVER_PORT',
+          'SERVER_PROTOCOL',
+          'SERVER_SOFTWARE',
+          'TMPDIR',
+          'USER',
+        ]
+
         base.class_eval do
           # Append application view path to the ExceptionNotifier lookup context.
           self.append_view_path "#{File.dirname(__FILE__)}/views"
-
-          @@whitelisted_env_vars = [
-            'action_dispatch.request.parameters',
-            'action_dispatch.request.path_parameters',
-            'action_dispatch.request.query_parameters',
-            'action_dispatch.request.request_parameters',
-            'BUNDLE_BIN_PATH',
-            'BUNDLE_GEMFILE',
-            'CONTENT_LENGTH',
-            'CONTENT_TYPE',
-            'DOCUMENT_ROOT',
-            'GEM_HOME',
-            'HOME',
-            /HTTP_/,
-            'ORIGINAL_FULLPATH',
-            'PASSENGER_APP_TYPE',
-            'PASSENGER_ENV',
-            'PASSENGER_RUBY',
-            'PASSENGER_SPAWN_METHOD',
-            'PASSENGER_USER',
-            'PATH',
-            'PATH_INFO',
-            'PWD',
-            'RAILS_ENV',
-            'REMOTE_ADDR',
-            'REMOTE_PORT',
-            'REQUEST_METHOD',
-            'REQUEST_URI',
-            'RUBYOPT',
-            'SERVER_ADDR',
-            'SERVER_NAME',
-            'SERVER_PORT',
-            'SERVER_PROTOCOL',
-            'SERVER_SOFTWARE',
-            'TMPDIR',
-            'USER',
-          ]
-
-
-          #NB: This doesn't seem to correctly create instance attr when run from within base#class_eval:
-          #cattr_accessor :whitelisted_env_vars
-
-          # Therefore, I have to create the class attr methods manually:
-          def self.whitelisted_env_vars
-            @@whitelisted_env_vars
-          end
-
-          def self.whitelisted_env_vars=(val)
-            @@whitelisted_env_vars = val
-          end
-
-          def whitelisted_env_vars
-            @@whitelisted_env_vars
-          end
-
-          def whitelisted_env_vars=(val)
-            @@whitelisted_env_vars = val
-          end
 
           def exception_notification(env, exception, options={}, default_options={})
             load_custom_views
