@@ -1,3 +1,3 @@
 module ExceptionNotifier
-  VERSION = '4.0.2.ps.5'
+  VERSION = '4.0.1.1'
 end
