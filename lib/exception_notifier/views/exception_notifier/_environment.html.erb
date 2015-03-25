@@ -1,4 +1,4 @@
-<% filtered_env = @request.filtered_env -%>
+<% filtered_env = @env -%>
 
 <ul style="list-style: none">
   <% filtered_env.keys.map(&:to_s).sort.each do |key| -%>
