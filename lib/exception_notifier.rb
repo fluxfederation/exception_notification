@@ -7,6 +7,7 @@ class ExceptionNotifier
       exceptions << ActiveRecord::RecordNotFound if defined? ActiveRecord
       exceptions << AbstractController::ActionNotFound if defined? AbstractController
       exceptions << ActionController::RoutingError if defined? ActionController
+      exceptions << ActionController::UnknownFormat if defined? ActionController
     end
   end
 
