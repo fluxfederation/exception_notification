@@ -1,10 +1,5 @@
-* Time   : <%= raw Time.now %>
-* Server : <%= raw `hostname -s`.chomp %>
-* Process: <%= raw $$ %>
-* Root   : <%= raw Pathname.new(Rails.root).realpath %> (PWD <%= Pathname.new(Dir.pwd).realpath %>)
-* Version: <%= raw File.read("#{Rails.root}/TAG").chomp rescue "unknown" %> (<%= File.read("#{Rails.root}/REVISION").chomp rescue "unknown" %>)
-
-<% max = @env.keys.max { |a, b| a.length <=> b.length } -%>
-<% @env.keys.sort.each do |key| -%>
-* <%= raw("%-*s: %s" % [max.length, key, inspect_object(@env[key])]) %>
+<% filtered_env = @env -%>
+<% max = filtered_env.keys.map(&:to_s).max { |a, b| a.length <=> b.length } -%>
+<% filtered_env.keys.map(&:to_s).sort.each do |key| -%>
+* <%= raw("%-*s: %s" % [max.length, key, inspect_object(filtered_env[key])]) %>
 <% end -%>
