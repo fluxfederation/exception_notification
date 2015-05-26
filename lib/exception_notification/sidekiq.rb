@@ -1,5 +1,6 @@
 require 'sidekiq'
 
+# Note: this class is only needed for Sidekiq version < 3.
 module ExceptionNotification
   class Sidekiq
 
@@ -15,8 +16,16 @@ module ExceptionNotification
   end
 end
 
-::Sidekiq.configure_server do |config|
-  config.server_middleware do |chain|
-    chain.add ::ExceptionNotification::Sidekiq
+if ::Sidekiq::VERSION < '3'
+  ::Sidekiq.configure_server do |config|
+    config.server_middleware do |chain|
+      chain.add ::ExceptionNotification::Sidekiq
+    end
+  end
+else
+  ::Sidekiq.configure_server do |config|
+    config.error_handlers << Proc.new { |ex, context|
+      ExceptionNotifier.notify_exception(ex, :data => { :sidekiq => context })
+    }
   end
 end

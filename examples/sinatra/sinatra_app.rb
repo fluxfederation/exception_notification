@@ -4,6 +4,10 @@ require 'sinatra/base'
 require 'exception_notification'
 
 class SinatraApp < Sinatra::Base
+  use Rack::Config do |env|
+    env["action_dispatch.parameter_filter"] = [:password] # This is highly recommended.  It will prevent the ExceptionNotification email from including your users' passwords
+  end
+
   use ExceptionNotification::Rack,
     :email => {
       :email_prefix => "[Example] ",

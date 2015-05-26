@@ -1,3 +1,19 @@
+== 4.1.0
+
+* enhancements
+  * Add support for Sidekiq 3.0 (by @mbrictson)
+  * Add IRC notifier (by @nathanjsharpe)
+  * Add ActionController::UnknownFormat to default ignored exceptions (by @rezwyi)
+  * Add message_template option to HipChat notifier (by @makimoto)
+  * Add support for HipChat APIv2 (by @michaelherold)
+  * Add Slack notifier (by @martin1keogh)
+  * Add option for notifying on `X-Cascade` header (by @etipton)
+  * Improve backtrace data (by @munkius)
+
+* bug fixes
+  * Fix `Rails.root` exception (by @hovatterz)
+  * Fix email notifier in Sinatra (by @betesh)
+
 == 4.0.1
 
 * enhancements

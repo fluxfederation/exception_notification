@@ -1,5 +1,7 @@
 module ExceptionNotification
   class Rack
+    class CascadePassException < Exception; end
+
     def initialize(app, options = {})
       @app = app
 
@@ -19,18 +21,30 @@ module ExceptionNotification
         end
       end
 
+      @ignore_cascade_pass = options.delete(:ignore_cascade_pass) { true }
+
       options.each do |notifier_name, options|
         ExceptionNotifier.register_exception_notifier(notifier_name, options)
       end
     end
 
     def call(env)
-      @app.call(env)
+      _, headers, _ = response = @app.call(env)
+
+      if !@ignore_cascade_pass && headers['X-Cascade'] == 'pass'
+        msg = "This exception means that the preceding Rack middleware set the 'X-Cascade' header to 'pass' -- in " <<
+          "Rails, this often means that the route was not found (404 error)."
+        raise CascadePassException, msg
+      end
+
+      response
     rescue Exception => exception
       if ExceptionNotifier.notify_exception(exception, :env => env)
         env['exception_notifier.delivered'] = true
       end
-      raise exception
+
+      raise exception unless exception.is_a?(CascadePassException)
+      response
     end
 
     private

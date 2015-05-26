@@ -35,7 +35,7 @@ class HipchatNotifierTest < ActiveSupport::TestCase
       :room_name => 'test_room'
     }
 
-    HipChat::Client.stubs(:new).with('bad_token').returns(nil)
+    HipChat::Client.stubs(:new).with('bad_token', {:api_version => 'v1'}).returns(nil)
 
     hipchat = ExceptionNotifier::HipchatNotifier.new(wrong_params)
     assert_nil hipchat.room
@@ -44,7 +44,7 @@ class HipchatNotifierTest < ActiveSupport::TestCase
   test "should not send hipchat notification if api_key is missing" do
     wrong_params  = {:room_name => 'test_room'}
 
-    HipChat::Client.stubs(:new).with(nil).returns(nil)
+    HipChat::Client.stubs(:new).with(nil, {:api_version => 'v1'}).returns(nil)
 
     hipchat = ExceptionNotifier::HipchatNotifier.new(wrong_params)
     assert_nil hipchat.room
@@ -53,10 +53,49 @@ class HipchatNotifierTest < ActiveSupport::TestCase
   test "should not send hipchat notification if room_name is missing" do
     wrong_params  = {:api_token => 'good_token'}
 
-    HipChat::Client.stubs(:new).with('good_token').returns({})
+    HipChat::Client.stubs(:new).with('good_token', {:api_version => 'v1'}).returns({})
 
     hipchat = ExceptionNotifier::HipchatNotifier.new(wrong_params)
     assert_nil hipchat.room
+  end
+
+  test "should send hipchat notification with message_template" do
+    options = {
+      :api_token => 'good_token',
+      :room_name => 'room_name',
+      :color     => 'yellow',
+      :message_template => ->(exception) { "This is custom message: '#{exception.message}'" }
+    }
+
+    HipChat::Room.any_instance.expects(:send).with('Exception', "This is custom message: '#{fake_exception.message}'", { :color => 'yellow' })
+
+    hipchat = ExceptionNotifier::HipchatNotifier.new(options)
+    hipchat.call(fake_exception)
+  end
+
+  test "should use APIv1 if api_version is not specified" do
+    options = {
+      :api_token => 'good_token',
+      :room_name => 'room_name',
+    }
+
+    HipChat::Client.stubs(:new).with('good_token', {:api_version => 'v1'}).returns({})
+
+    hipchat = ExceptionNotifier::HipchatNotifier.new(options)
+    hipchat.call(fake_exception)
+  end
+
+  test "should use APIv2 when specified" do
+    options = {
+      :api_token => 'good_token',
+      :room_name => 'room_name',
+      :api_version => 'v2',
+    }
+
+    HipChat::Client.stubs(:new).with('good_token', {:api_version => 'v2'}).returns({})
+
+    hipchat = ExceptionNotifier::HipchatNotifier.new(options)
+    hipchat.call(fake_exception)
   end
 
   private

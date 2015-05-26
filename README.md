@@ -266,6 +266,8 @@ Whatever::Application.config.middleware.use ExceptionNotification::Rack,
   }
 ```
 
+A complete list of `smtp_settings` options can be found in the [ActionMailer Configuration documentation](http://api.rubyonrails.org/classes/ActionMailer/Base.html#class-ActionMailer::Base-label-Configuration+options).
+
 
 ##### mailer_parent
 
@@ -367,21 +369,21 @@ The HipChat room where the notifications must be published to.
 
 The API token to allow access to your HipChat account.
 
-##### announce
+##### notify
 
-*Boolean, optionnal*
+*Boolean, optional*
 
 Notify users. Default : false.
 
 ##### color
 
-*String, optionnal*
+*String, optional*
 
 Color of the message. Default : 'red'.
 
 ##### from
 
-*String, optionnal*
+*String, optional, maximum length : 15*
 
 Message will appear from this nickname. Default : 'Exception'.
 
@@ -448,6 +450,187 @@ Whatever::Application.config.middleware.use ExceptionNotification::Rack,
 
 For more HTTParty options, check out the [documentation](https://github.com/jnunemaker/httparty).
 
+### IRC notifier
+
+This notifier sends notifications to an IRC channel using the carrier-pigeon gem.
+
+#### Usage
+
+Just add the [carrier-pigeon](https://github.com/portertech/carrier-pigeon) gem to your `Gemfile`:
+
+```ruby
+gem 'carrier-pigeon'
+```
+
+To configure it, you need to set at least the 'domain' option, like this:
+
+```ruby
+Whatever::Application.config.middleware.use ExceptionNotification::Rack,
+  :email => {
+    :email_prefix => "[Whatever] ",
+    :sender_address => %{"notifier" <notifier@example.com>},
+    :exception_recipients => %w{exceptions@example.com}
+  },
+  :irc => {
+    :domain => 'irc.example.com'
+  }
+```
+
+There are several other options, which are described below. For example, to use ssl and a password, add a prefix, post to the '#log' channel, and include recipients in the message (so that they will be notified), your configuration might look like this:
+
+```ruby
+Whatever::Application.config.middleware.use ExceptionNotification::Rack,
+  :irc => {
+    :domain => 'irc.example.com',
+    :nick => 'BadNewsBot',
+    :password => 'secret',
+    :port => 6697,
+    :channel => '#log',
+    :ssl => true,
+    :prefix => '[Exception Notification]',
+    :recipients => ['peter', 'michael', 'samir']
+  }
+
+```
+
+#### Options
+
+##### domain
+
+*String, required*
+
+The domain name of your IRC server.
+
+##### nick
+
+*String, optional*
+
+The message will appear from this nick. Default : 'ExceptionNotifierBot'.
+
+##### password
+
+*String, optional*
+
+Password for your IRC server.
+
+##### port
+
+*String, optional*
+
+Port your IRC server is listening on. Default : 6667.
+
+##### channel
+
+*String, optional*
+
+Message will appear in this channel. Default : '#log'.
+
+##### notice
+
+*Boolean, optional*
+
+Send a notice. Default : false.
+
+##### ssl
+
+*Boolean, optional*
+
+Whether to use SSL. Default : false.
+
+##### join
+
+*Boolean, optional*
+
+Join a channel. Default : false.
+
+##### recipients
+
+*Array of strings, optional*
+
+Nicks to include in the message. Default: []
+
+### Slack notifier
+
+This notifier sends notifications to a slack channel using the slack-notifier gem.
+
+#### Usage
+
+Just add the [slack-notifier](https://github.com/stevenosloan/slack-notifier) gem to your `Gemfile`:
+
+```ruby
+gem 'slack-notifier'
+```
+
+To configure it, you need to set at least the 'webhook_url' option, like this:
+
+```ruby
+Whatever::Application.config.middleware.use ExceptionNotification::Rack,
+  :email => {
+    :email_prefix => "[Whatever] ",
+    :sender_address => %{"notifier" <notifier@example.com>},
+    :exception_recipients => %w{exceptions@example.com}
+  },
+  :slack => {
+    :webhook_url => "[Your webhook url]",
+    :channel => "#exceptions",
+    :additional_parameters => {
+      :icon_url => "http://image.jpg",
+      :mrkdwn => true
+    }
+  }
+```
+
+The slack notification will include any data saved under `env["exception_notifier.exception_data"]`. If you find this too verbose, you can determine to exclude certain information by doing the following:
+
+```ruby
+Whatever::Application.config.middleware.use ExceptionNotification::Rack,
+  :slack => {
+    :webhook_url => "[Your webhook url]",
+    :channel => "#exceptions",
+    :additional_parameters => {
+      :icon_url => "http://image.jpg",
+      :mrkdwn => true
+    },
+    :ignore_data_if => lambda {|key, value|
+      "#{key}" == 'key_to_ignore' || value.is_a?(ClassToBeIgnored)
+    }
+  }
+```
+
+Any evaluation to `true` will cause the key / value pair not be be sent along to Slack.
+
+#### Options
+
+##### webhook_url
+
+*String, required*
+
+The Incoming WebHook URL on slack.
+
+##### channel
+
+*String, optional*
+
+Message will appear in this channel. Defaults to the channel you set as such on slack.
+
+##### username
+
+*String, optional*
+
+Username of the bot. Defaults to the name you set as such on slack
+
+##### custom_hook
+
+*String, optional*
+
+Custom hook name. See [slack-notifier](https://github.com/stevenosloan/slack-notifier#custom-hook-name) for
+more information. Default: 'incoming-webhook'
+
+##### additional_parameters
+
+*Hash of strings, optional*
+
+Contains additional payload for a message (e.g avatar, attachments, etc). See [slack-notifier](https://github.com/stevenosloan/slack-notifier#additional-parameters) for more information.. Default: '{}'
 
 ### Custom notifier
 
@@ -506,7 +689,7 @@ You can choose to ignore certain exceptions, which will make ExceptionNotificati
 
 ### :ignore_exceptions
 
-*Array of strings, default: %w{ActiveRecord::RecordNotFound AbstractController::ActionNotFound ActionController::RoutingError}*
+*Array of strings, default: %w{ActiveRecord::RecordNotFound AbstractController::ActionNotFound ActionController::RoutingError ActionController::UnknownFormat}*
 
 Ignore specified exception types. To achieve that, you should use the `:ignore_exceptions` option, like this:
 
@@ -556,6 +739,17 @@ Whatever::Application.config.middleware.use ExceptionNotification::Rack,
 
 You can make use of both the environment and the exception inside the lambda to decide wether to avoid or not sending the notification.
 
+## Rack X-Cascade Header
+
+Some rack apps (Rails in particular) utilize the "X-Cascade" header to pass the request-handling responsibility to the next middleware in the stack.
+
+Rails' routing middleware uses this strategy, rather than raising an exception, to handle routing errors (e.g. 404s); to be notified whenever a 404 occurs, set this option to "false."
+
+### :ignore_cascade_pass
+
+*Boolean, default: true*
+
+Set to false to trigger notifications when another rack middleware sets the "X-Cascade" header to "pass."
 
 ## Background Notifications
 
@@ -620,6 +814,10 @@ or
 
 ## Versions
 
+For v4.0.1, see this tag:
+
+http://github.com/smartinez87/exception_notification/tree/v4.0.1
+
 For v4.0.0, see this tag:
 
 http://github.com/smartinez87/exception_notification/tree/v4.0.0
@@ -631,10 +829,6 @@ http://github.com/smartinez87/exception_notification/tree/v3.0.1
 For v3.0.0, see this tag:
 
 http://github.com/smartinez87/exception_notification/tree/v3.0.0
-
-For v2.6.1, see this tag:
-
-http://github.com/smartinez87/exception_notification/tree/v2.6.1
 
 For previous releases, visit:
 

@@ -32,9 +32,9 @@
           <h3 style="color: #b94a48">
             <%= @exception.class.to_s =~ /^[aeiou]/i ? 'An' : 'A' %> <%= @exception.class %> occurred in <%= @kontroller.controller_name %>#<%= @kontroller.action_name %>:
           </h3>
-          <p style="color: #b94a48"><%= raw @exception.message %></p>
+          <p style="color: #b94a48"><%= @exception.message %></p>
           <pre style="font-size: 12px; padding: 5px; background-color:#f5f5f5">
-            <%= raw @backtrace.first %>
+<%= @backtrace.first %>
           </pre>
         </td>
       </tr>

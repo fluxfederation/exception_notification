@@ -4,7 +4,7 @@
 * Parameters : <%= raw @request.filtered_parameters.inspect %>
 * Timestamp  : <%= raw Time.current %>
 * Server : <%= raw Socket.gethostname %>
-<% if defined?(Rails) %>
+<% if defined?(Rails) && Rails.respond_to?(:root) %>
 * Rails root : <%= raw Rails.root %>
 <% end %>
 * Process: <%= raw $$ %>

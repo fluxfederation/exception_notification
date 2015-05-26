@@ -1,36 +1,36 @@
 <ul style="list-style: none">
   <li>
     <strong>URL:</strong>
-    <span><%= raw @request.url %></span>
+    <span><%= @request.url %></span>
   </li>
   <li>
     <strong>HTTP Method:</strong>
-    <span><%= raw @request.request_method %></span>
+    <span><%= @request.request_method %></span>
   </li>
   <li>
     <strong>IP Address:</strong>
-    <span><%= raw @request.remote_ip %></span>
+    <span><%= @request.remote_ip %></span>
   </li>
   <li>
     <strong>Parameters:</strong>
-    <span><%= raw @request.filtered_parameters.inspect %></span>
+    <span><%= @request.filtered_parameters.inspect %></span>
   </li>
   <li>
     <strong>Timestamp:</strong>
-    <span><%= raw Time.current %></span>
+    <span><%= Time.current %></span>
   </li>
   <li>
     <strong>Server:</strong>
-    <span><%= raw Socket.gethostname %></span>
+    <span><%= Socket.gethostname %></span>
   </li>
-  <% if defined?(Rails) %>
+  <% if defined?(Rails) && Rails.respond_to?(:root) %>
     <li>
       <strong>Rails root:</strong>
-      <span><%= raw Rails.root %></span>
+      <span><%= Rails.root %></span>
     </li>
   <% end %>
   <li>
     <strong>Process:</strong>
-    <span><%= raw $$ %></span>
+    <span><%= $$ %></span>
   </li>
 </ul>
