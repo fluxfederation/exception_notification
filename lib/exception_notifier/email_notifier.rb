@@ -53,6 +53,11 @@ module ExceptionNotifier
           'SERVER_SOFTWARE',
           'TMPDIR',
           'USER',
+          # Addiitonal for background tasks:
+          '_',
+          'ACTIVE_DATACENTRE',
+          'ACTIVE_DATACENTRE_CHECK_DNS',
+          'ACTIVE_DATACENTRE_CHECK_IP',
         ]
 
         base.class_eval do
@@ -76,7 +81,7 @@ module ExceptionNotifier
             @backtrace  = exception.backtrace ? clean_backtrace(exception) : []
             @sections   = @options[:sections]
             @data       = (env['exception_notifier.exception_data'] || {}).merge(options[:data] || {})
-            @sections   = @sections + %w(data) unless @data.empty?
+            @sections  += %w(data) unless @data.empty?
 
             compose_email
           end
@@ -84,11 +89,15 @@ module ExceptionNotifier
           def background_exception_notification(exception, options={}, default_options={})
             load_custom_views
 
+            @env       = whitelist_env(ENV)
             @exception = exception
             @options   = options.reverse_merge(default_options)
             @backtrace = exception.backtrace || []
+            @error_source = options[:error_source]
+            @error_source &&= "\"#{@error_source}\""  # Quotes, to help emphasise the error
             @sections  = @options[:background_sections]
             @data      = options[:data] || {}
+            @sections += %w(data) unless @data.empty?
 
             compose_email
           end
@@ -217,7 +226,7 @@ module ExceptionNotifier
         :email_prefix => "[ERROR] ",
         :email_format => :text,
         :sections => %w(request session environment versioning backtrace),
-        :background_sections => %w(backtrace data),
+        :background_sections => %w(system environment versioning backtrace),
         :verbose_subject => true,
         :normalize_subject => false,
         :delivery_method => nil,

@@ -1,0 +1,14 @@
+<ul style="list-style: none">
+  <li>
+    <strong>Timestamp:</strong>
+    <span><%= raw Time.now %></span>
+  </li>
+  <li>
+    <strong>Server:</strong>
+    <span><%= raw Socket.gethostname %></span>
+  </li>
+  <li>
+    <strong>Process:</strong>
+    <span><%= raw $$ %></span>
+  </li>
+</ul>
